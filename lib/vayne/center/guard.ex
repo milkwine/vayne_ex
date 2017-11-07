@@ -1,9 +1,8 @@
 defmodule Vayne.Center.Guard do
 
   @moduledoc """
-  0. Wait other node start while connect node before self.
-  1. Start as center if self is the foremost node alive.
-  2. 
+  0. Ping all nodes in conf;
+  1. Start center if self is the foremost node alive.
   """
   require Logger
 
@@ -21,7 +20,7 @@ defmodule Vayne.Center.Guard do
   def handle_info(:tick, state) do
     state    = check_to_spawn(state)
     interval = Application.get_env(:vayne, :guard_tick_interval)
-    IO.inspect state
+    Logger.debug "Guard Tick, Stat: #{inspect stat}"
     Process.send_after(self(), :tick, interval)
     {:noreply, state}
   end
@@ -87,6 +86,7 @@ defmodule Vayne.Center.Guard do
         is_local(service_pid) ->
           service_pid
         true ->
+          Logger.info "Stop Remote Center!"
           GenServer.stop(service_pid, {:take_over, Node.self(), self()})
           spawn_service()
       end
