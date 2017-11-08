@@ -20,7 +20,7 @@ defmodule Vayne.Center.Guard do
   def handle_info(:tick, state) do
     state    = check_to_spawn(state)
     interval = Application.get_env(:vayne, :guard_tick_interval)
-    Logger.debug "Guard Tick, Stat: #{inspect stat}"
+    Logger.debug "Guard Tick, Stat: #{inspect state}"
     Process.send_after(self(), :tick, interval)
     {:noreply, state}
   end
