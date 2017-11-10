@@ -1,4 +1,4 @@
-# Vayne
+# Vayne [![Build Status](https://travis-ci.org/sawater/vayne_ex.svg?branch=master)](https://travis-ci.org/sawater/vayne_ex)
 
 **TODO: Add description**
 
