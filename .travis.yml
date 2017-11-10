@@ -8,11 +8,9 @@ otp_release:
   - 19.3
   - 20.0
 
-sudo: true
-
 before_script:
-  - setsid MIX_ENV=test iex --sname vayne-1@localhost -S mix
-  - setsid MIX_ENV=test iex --sname vayne-3@localhost -S mix
+  - MIX_ENV=test iex --sname vayne-1@localhost -S mix &
+  - MIX_ENV=test iex --sname vayne-3@localhost -S mix &
 
 script:
   - MIX_ENV=test mix credo  --all --format=oneline
