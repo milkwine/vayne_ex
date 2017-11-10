@@ -11,6 +11,7 @@ otp_release:
 before_script:
   - MIX_ENV=test iex --sname vayne-1@localhost -S mix &
   - MIX_ENV=test iex --sname vayne-3@localhost -S mix &
+  - touch .test_node.list
 
 script:
   - MIX_ENV=test mix credo  --all --format=oneline
