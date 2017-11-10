@@ -24,9 +24,7 @@ defmodule Vayne.Center.Service do
 
   def handle_call(:all, _from, table) do
     list = :ets.tab2list(table)
-    IO.puts "here!"
-
-    { :reply, list, table }
+    {:reply, list, table}
   end
 
   def diff_task(task), do: GenServer.call({:global, __MODULE__}, {:diff, task})

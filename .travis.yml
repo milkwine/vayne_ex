@@ -1,0 +1,19 @@
+language: elixir
+
+elixir:
+  - 1.4.5
+  - 1.5.2
+
+otp_release:
+  - 19.3
+  - 20.0
+
+sudo: true
+
+before_script:
+  - setsid MIX_ENV=test iex --sname vayne-1@localhost -S mix
+  - setsid MIX_ENV=test iex --sname vayne-3@localhost -S mix
+
+script:
+  - MIX_ENV=test mix credo  --all --format=oneline
+  - MIX_ENV=test elixir --sname vayne-2@localhost -S mix test

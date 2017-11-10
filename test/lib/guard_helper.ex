@@ -4,6 +4,15 @@ defmodule Vayne.Center.GuardHelper do
 
   def self_node, do: :"vayne-2@localhost"
 
+  def can_test_distributed do
+    result = ~w( vayne-1@localhost vayne-3@localhost) 
+    |> Enum.map(&String.to_atom/1)
+    |> Enum.map(&Node.ping/1)
+
+    Node.self() == :"vayne-2@localhost" and Enum.all?(result, fn r -> r == :pong end) 
+
+  end
+
   def switch_normal do
     ~w(
     vayne-1@localhost
