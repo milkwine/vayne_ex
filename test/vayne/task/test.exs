@@ -3,8 +3,12 @@ defmodule VayneTaskTestTest do
   doctest Vayne.Task.Test
 
   test "make task" do
-    target = %Vayne.Task{param: [:foo, :bar], pk: "Vayne.Task:foobar", type: Vayne.Task.Test}
-    assert {:ok, ^target} = Vayne.Task.make(Vayne.Task.Test, [:foo, :bar])
+     {:ok, pid} = Vayne.Task.Test.start(["p1", "p2"], [type: :repeat])
+
+     gen_stat = %Vayne.Task{opt: [type: :repeat], param: ["p1", "p2"], pk: "Elixir.Vayne.Task.Test#82935458",
+      stat: ["p1", "p2"], type: Vayne.Task.Test}
+
+    assert gen_stat == :sys.get_state(pid)
   end
 
 end
