@@ -1,4 +1,5 @@
 defmodule Vayne.Center.Service do
+  use GenServer
   require Logger
 
   @moduledoc """
@@ -9,37 +10,33 @@ defmodule Vayne.Center.Service do
   Recored which worker hold the task.
   """
 
+  @running :running_cache
+  @task    :task_cache
   def init(_) do
-    table = :ets.new(:vayne_tasks, [:set, :protected])
-    {:ok, table}
+    {:ok, _pid} = Cachex.start_link(@running, [])
+    {:ok, _pid} = Cachex.start_link(@task, [])
+    {:ok, nil}
   end
 
-  def terminate({:take_over, node, guard_pid}, state) do
+  def terminate({:take_over, node, guard_pid}, _state) do
     Logger.info "Take over have been called!(Node: #{inspect node}, Guard pid: #{inspect guard_pid})"
   end
 
-  def terminate(reason, state) do
+  def terminate(reason, _state) do
     Logger.info "Terminate, reason: #{inspect reason}"
   end
 
-  def handle_call(:all, _from, table) do
-    list = :ets.tab2list(table)
-    {:reply, list, table}
+  def handle_call({:register, task}, {pid, _ref}, stat) do
+    with {:ok, false} <- Cachex.exists?(@running, task.pk),
+         {:ok, true}  <- Cachex.set(@running, task.pk, pid)
+    do
+      {:reply, :ok, stat}
+    else
+      _ ->
+        {:reply, :error, stat}
+    end
   end
 
-  def diff_task(task), do: GenServer.call({:global, __MODULE__}, {:diff, task})
+  def register(task), do: GenServer.call({:global, __MODULE__}, {:register, task})
 
-  def load_task(task), do: GenServer.call({:global, __MODULE__}, {:load, task})
-
-  def all_task, do: GenServer.call({:global, __MODULE__}, :all)
-
-  def clean_task, do: GenServer.call({:global, __MODULE__}, :clean)
-
-  def get_task(num \\ 10), do: GenServer.call({:global, __MODULE__}, {:get, num})
-
-  #@spec commit_task([binary, pid]) :: :ok | :error
-  #[{key, pid}]
-  def commit_task(tasks), do: GenServer.call({:global, __MODULE__}, {:commit, tasks})
-
-  def query_task(keys), do: GenServer.call({:global, __MODULE__}, {:query, keys})
 end

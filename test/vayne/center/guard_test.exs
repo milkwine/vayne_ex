@@ -28,5 +28,15 @@ defmodule Vayne.Center.GuardTest do
     assert :"vayne-1@localhost" ==  :erlang.node(service_pid)
   end
 
+  @tag :distributed
+  test "task register" do
+     {:ok, pid} = Vayne.Task.Test.start(["p1", "p2"], [type: :repeat])
+
+     gen_stat = %Vayne.Task{opt: [type: :repeat], param: ["p1", "p2"], pk: "Elixir.Vayne.Task.Test#82935458",
+      stat: ["p1", "p2"], type: Vayne.Task.Test}
+
+    assert gen_stat == :sys.get_state(pid)
+    assert Cachex.get!(:running_cache, gen_stat.pk) == pid
+  end
 
 end

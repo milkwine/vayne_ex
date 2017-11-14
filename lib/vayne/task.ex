@@ -1,4 +1,4 @@
-defmodule Vayne.Task do
+defmodule
 
   @moduledoc """
   Abstract Vayne Task Behaviour
@@ -45,17 +45,42 @@ defmodule Vayne.Task do
     quote do
       use GenServer
       @behaviour Vayne.Task
+      require Logger
 
       def start(param, opt) do
         GenServer.start(__MODULE__, [param, opt])
       end
 
+      @doc """
+      Should never use this function; Only for unite test.
+      """
+      def start_no_register(param, opt) do
+        GenServer.start(__MODULE__, {:no_register, [param, opt]})
+      end
+
+      def init({:no_register, [param, opt]}) do
+        {:ok, pk} = pk(param)
+        {:ok, stat} = init_stat(param)
+        task = %Vayne.Task{type: __MODULE__, pk: pk, param: param, opt: opt, stat: stat}
+        {:ok, task}
+      end
+
       def init([param, opt]) do
         {:ok, pk} = pk(param)
         {:ok, stat} = init_stat(param)
-        #register center pk, ok return stat, or clean stat
         task = %Vayne.Task{type: __MODULE__, pk: pk, param: param, opt: opt, stat: stat}
-        {:ok, task}
+        case Vayne.Center.Service.register(task) do
+          :ok -> {:ok, task}
+          _   ->
+            clean(stat)
+            Logger.info fn -> "Register task failed: #{inspect task}" end
+            {:error, "Register task failed"}
+        end
+      end
+
+      def terminate(reason, t=%Vayne.Task{}) do
+        clean(t.stat)
+        Logger.info fn -> "Task stop, reason: #{inspect reason}, task: #{inspect t}" end
       end
 
       def pk(param) do
