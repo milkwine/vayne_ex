@@ -1,4 +1,4 @@
-defmodule
+defmodule Vayne.Task do
 
   @moduledoc """
   Abstract Vayne Task Behaviour
@@ -78,7 +78,7 @@ defmodule
         end
       end
 
-      def terminate(reason, t=%Vayne.Task{}) do
+      def terminate(reason, t = %Vayne.Task{}) do
         clean(t.stat)
         Logger.info fn -> "Task stop, reason: #{inspect reason}, task: #{inspect t}" end
       end
@@ -98,5 +98,4 @@ defmodule
 
     end
   end
-
 end
