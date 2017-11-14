@@ -30,7 +30,7 @@ defmodule Vayne.Center.GuardTest do
 
   @tag :distributed
   test "task register" do
-    GuardHelper.switch_normal()
+    GuardHelper.switch_failover()
     {:ok, pid} = Vayne.Task.Test.start(["p1", "p2"], [type: :repeat])
 
     gen_stat = %Vayne.Task{opt: [type: :repeat], param: ["p1", "p2"], pk: "Elixir.Vayne.Task.Test#82935458",
