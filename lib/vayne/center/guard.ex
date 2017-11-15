@@ -54,7 +54,7 @@ defmodule Vayne.Center.Guard do
   end
 
   def spawn_service do
-    ret = GenServer.start(Vayne.Center.Service, [], name: {:global, Vayne.Center.Service})
+    ret = Vayne.Center.Supervisor.start
     case ret do
       {:ok, pid} ->
         Logger.info "Spawn Center Service Suc.(pid: #{inspect pid})"
@@ -75,7 +75,7 @@ defmodule Vayne.Center.Guard do
     nodes = nodes_from_conf()
     ping_nodes(nodes)
 
-    service_pid = GenServer.whereis({:global, Vayne.Center.Service})
+    service_pid = GenServer.whereis({:global, Vayne.Center.Supervisor})
 
     new_pid = if pre_nodes_down?(nodes) do
 

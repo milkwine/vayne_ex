@@ -21,6 +21,7 @@ defmodule Vayne.Mixfile do
   defp deps do
     [
       {:cachex, "~> 2.1"},
+      {:benchee, "~> 0.10", only: [:dev, :test]},
       {:credo, "~> 0.8", only: [:dev, :test]},
       {:coverex, "~> 1.4.10", only: :test}
     ]

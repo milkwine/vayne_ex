@@ -12,21 +12,18 @@ defmodule Vayne.Center.Service do
 
   @running :running_cache
   @task    :task_cache
+  def start_link do
+    GenServer.start(__MODULE__, [], name: {:global, __MODULE__})
+  end
+
   def init(_) do
     {:ok, _pid} = Cachex.start_link(@running, [])
     {:ok, _pid} = Cachex.start_link(@task, [])
     {:ok, nil}
   end
 
-  def terminate({:take_over, node, guard_pid}, _state) do
-    Logger.info "Take over have been called!(Node: #{inspect node}, Guard pid: #{inspect guard_pid})"
-  end
-
-  def terminate(reason, _state) do
-    Logger.info "Terminate, reason: #{inspect reason}"
-  end
-
   def handle_call({:register, task}, {pid, _ref}, stat) do
+
     with {:ok, false} <- Cachex.exists?(@running, task.pk),
          {:ok, true}  <- Cachex.set(@running, task.pk, pid)
     do

@@ -18,3 +18,8 @@ before_script:
 script:
   - MIX_ENV=test mix credo  --all --format=oneline
   - MIX_ENV=test elixir --sname vayne-2@localhost -S mix test
+
+cache:
+ directories:
+   - _build
+   - deps

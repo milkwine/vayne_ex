@@ -8,6 +8,8 @@ defmodule Vayne.Center.GuardTest do
     GuardHelper.switch_normal()
     service_pid = GenServer.whereis({:global, Vayne.Center.Service})
     assert :"vayne-1@localhost" ==  :erlang.node(service_pid)
+    assert {:error, :no_cache} = Cachex.size(:task_cache)
+    assert {:error, :no_cache} = Cachex.size(:running_cache)
   end
 
   @tag :distributed
@@ -15,6 +17,8 @@ defmodule Vayne.Center.GuardTest do
     GuardHelper.switch_failover()
     service_pid = GenServer.whereis({:global, Vayne.Center.Service})
     assert :"vayne-2@localhost" ==  :erlang.node(service_pid)
+    assert {:ok, _} = Cachex.size(:task_cache)
+    assert {:ok, _} = Cachex.size(:running_cache)
   end
 
   @tag :distributed
@@ -22,10 +26,14 @@ defmodule Vayne.Center.GuardTest do
     GuardHelper.switch_failover()
     service_pid = GenServer.whereis({:global, Vayne.Center.Service})
     assert :"vayne-2@localhost" ==  :erlang.node(service_pid)
+    assert {:ok, _} = Cachex.size(:task_cache)
+    assert {:ok, _} = Cachex.size(:running_cache)
 
     GuardHelper.switch_normal()
     service_pid = GenServer.whereis({:global, Vayne.Center.Service})
     assert :"vayne-1@localhost" ==  :erlang.node(service_pid)
+    assert {:error, :no_cache} = Cachex.size(:task_cache)
+    assert {:error, :no_cache} = Cachex.size(:running_cache)
   end
 
   @tag :distributed
