@@ -5,21 +5,13 @@ defmodule Vayne.Task do
   """
   @type stat  :: any
   @type param :: list
-  @type opt :: list
   @type pk    :: binary
-  @type t :: %__MODULE__{
-            type:  module,
-            param: param,
-            opt:   opt,
-            pk:    pk,
-            stat:  stat
-          }
 
   defstruct type:  Vayne.Task.Test,
-            param: ["foo"],
-            opt:   [schedule: :repeat, interval: 60],
             pk:    nil,
-            stat:  nil
+            triger:   [:m, :a],
+            state:  nil,
+            statistics: nil
 
   @doc """
   Generate vayne task pk according to the params
@@ -47,28 +39,28 @@ defmodule Vayne.Task do
       @behaviour Vayne.Task
       require Logger
 
-      def start(param, opt) do
-        GenServer.start(__MODULE__, [param, opt])
+      def start(param, triggers) do
+        GenServer.start(__MODULE__, [param, triggers])
       end
 
       @doc """
       Should never use this function; Only for unite test.
       """
-      def start_no_register(param, opt) do
-        GenServer.start(__MODULE__, {:no_register, [param, opt]})
+      def start_no_register(param, triggers) do
+        GenServer.start(__MODULE__, {:no_register, [param, triggers]})
       end
 
-      def init({:no_register, [param, opt]}) do
+      def init({:no_register, [param, triggers]}) do
         {:ok, pk} = pk(param)
         {:ok, stat} = init_stat(param)
-        task = %Vayne.Task{type: __MODULE__, pk: pk, param: param, opt: opt, stat: stat}
+        task = %Vayne.Task{type: __MODULE__, pk: pk, state: stat}
         {:ok, task}
       end
 
       def init([param, opt]) do
         {:ok, pk} = pk(param)
         {:ok, stat} = init_stat(param)
-        task = %Vayne.Task{type: __MODULE__, pk: pk, param: param, opt: opt, stat: stat}
+        task = %Vayne.Task{type: __MODULE__, pk: pk, state: stat}
         case Vayne.Center.Service.register(task) do
           :ok -> {:ok, task}
           _   ->

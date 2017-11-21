@@ -2,6 +2,9 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :vayne, trigger: [
+  {Vayne.Trigger.Repeat, [interval: :timer.seconds(5)]}
+]
 
 if Mix.env == :test do         
   config :vayne, node_list: ".test_node.list"
