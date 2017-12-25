@@ -7,11 +7,11 @@ defmodule Vayne.Task do
   @type param :: list
   @type pk    :: binary
 
-  defstruct type:  Vayne.Task.Test,
-            pk:    nil,
-            triger:   [:m, :a],
-            state:  nil,
-            statistics: nil
+  defstruct type:        Vayne.Task.Test,
+            pk:          nil,
+            trigger:     nil,
+            state:       nil,
+            statistics:  nil
 
   @doc """
   Generate vayne task pk according to the params
@@ -57,17 +57,22 @@ defmodule Vayne.Task do
         {:ok, task}
       end
 
-      def init([param, opt]) do
+      def init([param, triggers]) do
         {:ok, pk} = pk(param)
         {:ok, stat} = init_stat(param)
-        task = %Vayne.Task{type: __MODULE__, pk: pk, state: stat}
-        case Vayne.Center.Service.register(task) do
-          :ok -> {:ok, task}
-          _   ->
+        task = %Vayne.Task{type: __MODULE__, pk: pk, state: stat, trigger: triggers}
+
+        with :ok <- Vayne.Trigger.register(triggers),
+             :ok <- Vayne.Center.Service.register(task)
+        do
+          {:ok, task}
+        else
+          {:error, error} ->
             clean(stat)
-            Logger.info fn -> "Register task failed: #{inspect task}" end
-            {:error, "Register task failed"}
+            Logger.info fn -> "Init task failed: #{error}, param: #{inspect param}, trigger: #{inspect triggers}" end
+            {:error, error}
         end
+
       end
 
       def terminate(reason, t = %Vayne.Task{}) do

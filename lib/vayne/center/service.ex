@@ -29,8 +29,10 @@ defmodule Vayne.Center.Service do
     do
       {:reply, :ok, stat}
     else
+      {:ok, true} ->
+        {:reply, {:error, "Same task has already exists, pk: #{task.pk}"}, stat}
       _ ->
-        {:reply, :error, stat}
+        {:reply, {:error, "Set cache failed, pk: #{task.pk}"}, stat}
     end
   end
 

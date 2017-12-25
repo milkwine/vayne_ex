@@ -13,3 +13,5 @@ else
   config :vayne, node_list: "node.list"
   config :vayne, guard_tick_interval: 5_000
 end
+
+config :logger, level: :info

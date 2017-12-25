@@ -31,12 +31,12 @@ defmodule Vayne.Trigger.Repeat do
         state = Map.put(state, pid, trigger_stat)
         {:ok, state}
       error ->
-        error
+        {:error, error}
     end
   end
 
   def do_clean(pid, state) do
-    :ok
+    state
   end
 
   def handle_info(:check_task, state) do
