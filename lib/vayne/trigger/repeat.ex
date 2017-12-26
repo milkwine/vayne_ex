@@ -27,8 +27,8 @@ defmodule Vayne.Trigger.Repeat do
   """
   def do_register(pid, param, state) do
     case parse_param(param) do
-      {:ok, trigger_stat} -> 
-        state = Map.put(state, pid, trigger_stat)
+      {:ok, repeat_stat} -> 
+        state = Map.put(state, pid, repeat_stat)
         {:ok, state}
       error ->
         {:error, error}
@@ -40,6 +40,13 @@ defmodule Vayne.Trigger.Repeat do
   end
 
   def handle_info(:check_task, state) do
+
+    now = System.system_time(:second)
+
+    state 
+    |> Enum.filter(fn {_pid, %{next: next}} -> now >= next end)
+    |> Enum.map()
+
     tick()
     {:noreply, state}
   end
