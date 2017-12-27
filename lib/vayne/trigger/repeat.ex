@@ -45,7 +45,7 @@ defmodule Vayne.Trigger.Repeat do
 
     state 
     |> Enum.filter(fn {_pid, %{next: next}} -> now >= next end)
-    |> Enum.map()
+    #|> Enum.map()
 
     tick()
     {:noreply, state}
