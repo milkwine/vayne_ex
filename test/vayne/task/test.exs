@@ -1,14 +1,34 @@
 defmodule VayneTaskTestTest do
   use ExUnit.Case
-  doctest Vayne.Task.Test
 
-  test "make task" do
-    {:ok, pid} = Vayne.Task.Test.start(["p1", "p2"], [{:repeat, [interval: 10_000]}])
+  alias Vayne.Center.GuardHelper
 
-    gen_stat = %Vayne.Task{pk: "Elixir.Vayne.Task.Test#82935458", state: ["p1", "p2"],
-     statistics: nil, trigger: [repeat: [interval: 10000]], type: Vayne.Task.Test}
+  setup do
+    GuardHelper.switch_normal()
+  end
 
-    assert gen_stat == :sys.get_state(pid)
+  test "normal" do
+    {:ok, pid} = Vayne.Task.Test.start(:normal, [])
+    Vayne.Task.run(pid)
+    Process.sleep(2_000)
+    task = Vayne.Task.stat(pid)
+    assert match?([{_, :ok, _}], task.results)
+  end
+
+  test "timeout" do
+    {:ok, pid} = Vayne.Task.Test.start(:timeout, [], 4_000)
+    Vayne.Task.run(pid)
+    Process.sleep(5_000)
+    task = Vayne.Task.stat(pid)
+    assert match?([{_, :timeout, _}], task.results)
+  end
+
+  test "error" do
+    {:ok, pid} = Vayne.Task.Test.start(:error, [])
+    Vayne.Task.run(pid)
+    Process.sleep(2_000)
+    task = Vayne.Task.stat(pid)
+    assert match?([{_, :error, _}], task.results)
   end
 
 end

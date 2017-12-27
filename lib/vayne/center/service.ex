@@ -36,6 +36,14 @@ defmodule Vayne.Center.Service do
     end
   end
 
+  def handle_call(:all, {pid, _ref}, stat) do
+
+    keys = Cachex.keys!(@running)
+    {:reply, keys, stat}
+  end
+
   def register(task), do: GenServer.call({:global, __MODULE__}, {:register, task})
+
+  def all_tasks, do: GenServer.call({:global, __MODULE__}, :all)
 
 end

@@ -7,5 +7,5 @@
 unless Vayne.Center.GuardHelper.can_test_distributed do
   ExUnit.configure(exclude: [distributed: true])
 end
-
+Vayne.Center.GuardHelper.switch_normal()
 ExUnit.start()

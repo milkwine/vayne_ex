@@ -5,8 +5,11 @@ defmodule Vayne.Task.Test do
   """
   use Vayne.Task
 
-  def run(_stat) do
-    IO.puts "run test task!"
-    :ok
+  def do_run(type) do
+    case type do
+      :timeout -> Process.sleep(10_000)
+      :error -> 1/0
+      _ -> "result"
+    end
   end
 end
