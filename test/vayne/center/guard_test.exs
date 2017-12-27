@@ -36,17 +36,4 @@ defmodule Vayne.Center.GuardTest do
     assert {:error, :no_cache} = Cachex.size(:running_cache)
   end
 
-  @tag :distributed
-  test "task register" do
-    GuardHelper.switch_failover()
-
-    {:ok, pid} = Vayne.Task.Test.start(["p1", "p2"], [{:repeat, [interval: 10_000]}])
-
-    gen_stat = %Vayne.Task{pk: "Elixir.Vayne.Task.Test#82935458", state: ["p1", "p2"],
-     statistics: nil, trigger: [repeat: [interval: 10000]], type: Vayne.Task.Test}
-
-    assert gen_stat == :sys.get_state(pid)
-    assert Cachex.get!(:running_cache, gen_stat.pk) == pid
-  end
-
 end
