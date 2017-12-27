@@ -1,5 +1,8 @@
 defmodule Vayne.Trigger do
 
+  @moduledoc """
+  """
+
   @type param :: list
   @type state :: any()
 
@@ -18,7 +21,9 @@ defmodule Vayne.Trigger do
       end
 
       def get_self_conf do
-        Application.get_env(:vayne, :trigger) |> Keyword.get(__MODULE__, [])
+        :vayne
+        |> Application.get_env(:trigger)
+        |> Keyword.get(__MODULE__, [])
       end
 
       def init(param) do

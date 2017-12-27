@@ -1,5 +1,8 @@
 defmodule Vayne.Trigger.Repeat do
 
+  @moduledoc """
+  """
+
   use Vayne.Trigger
 
   @interval 3_000
@@ -43,8 +46,8 @@ defmodule Vayne.Trigger.Repeat do
 
     now = System.system_time(:second)
 
-    state 
-    |> Enum.filter(fn {_pid, %{next: next}} -> now >= next end)
+    #state 
+    #|> Enum.filter(fn {_pid, %{next: next}} -> now >= next end)
     #|> Enum.map()
 
     tick()

@@ -34,6 +34,9 @@ defmodule Vayne.Task do
 
   defmodule Result do
 
+    @moduledoc """
+    """
+
     @type t :: %__MODULE__{
               start_time:   non_neg_integer,
               using_second: non_neg_integer,
@@ -146,20 +149,20 @@ defmodule Vayne.Task do
 
       #task exit error
       def handle_info({:EXIT, _from, error}, t) do
-        new_stat= fill_result(t, :error, error)
+        new_stat = fill_result(t, :error, error)
         {:noreply, new_stat}
       end
       
       #task result get
       def handle_info({:finish, result}, t) do
-        new_stat= fill_result(t, :ok, result)
+        new_stat = fill_result(t, :ok, result)
         {:noreply, new_stat}
       end
 
       #task timeout
       def handle_info(:timeout, t = %Vayne.Task{task: pid}) when is_pid(pid) do
         Process.exit(pid, :timeout)
-        new_stat= fill_result(t, :timeout)
+        new_stat = fill_result(t, :timeout)
         {:noreply, new_stat}
       end
 
@@ -173,7 +176,6 @@ defmodule Vayne.Task do
           t = t
           |> Map.put(:task, task)
           |> Map.put(:start_time, :os.system_time(:second))
-          |> IO.inspect
 
           Process.send_after(self(), :timeout, t.timeout)
           {:reply, :ok, t}
@@ -191,7 +193,7 @@ defmodule Vayne.Task do
       #@t        msg:          term}
       
       @result_keep 3
-      defp fill_result(t=%Vayne.Task{}, type, msg \\ nil) do
+      defp fill_result(t = %Vayne.Task{}, type, msg \\ nil) do
         now = :os.system_time(:second)
 
         result = %Vayne.Task.Result{
