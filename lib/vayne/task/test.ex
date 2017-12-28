@@ -6,6 +6,7 @@ defmodule Vayne.Task.Test do
   use Vayne.Task
 
   def do_run(type) do
+    IO.puts "Run Vayne.Task now, type: #{type}"
     case type do
       :timeout -> Process.sleep(10_000)
       :error   -> 1 / 0

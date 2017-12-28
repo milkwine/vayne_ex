@@ -31,4 +31,14 @@ defmodule VayneTaskTestTest do
     assert status.last.type == :error
   end
 
+  test "task killed and start again" do
+    {:ok, pid} = Vayne.Task.Test.start(:test_kill, [])
+    Vayne.Task.stop(pid)
+
+    assert {:ok, _} = Vayne.Task.Test.start(:test_kill, [])
+
+  end
+
+  test "task killed and no more job process left" do
+  end
 end

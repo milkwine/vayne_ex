@@ -70,7 +70,14 @@ defmodule Vayne.Task do
   @callback do_clean(stat) :: :ok | {:error, String.t}
 
 
-  def run(pid),  do: GenServer.call(pid, :run)
+  def run(pid) do
+    try do
+      GenServer.call(pid, :run)
+    catch
+      :exit, value -> {:error, value}
+    end
+  end
+  def stop(pid),  do: GenServer.stop(pid, :shutdown)
 
   @spec stat(pid) :: map
   def stat(pid) do
@@ -79,7 +86,7 @@ defmodule Vayne.Task do
 
     ret = if status.task, do: Map.put(ret, :status, :running), else: Map.put(ret, :status, :not_run)
 
-    ret = Map.put(ret, :last, List.first(status.results))
+    Map.put(ret, :last, List.first(status.results))
   end
 
   def apply_run(parent, m, f, a) do
@@ -132,7 +139,7 @@ defmodule Vayne.Task do
 
       def terminate(reason, t = %Vayne.Task{}) do
         do_clean(t.stat)
-        Logger.info fn -> "Task stop, reason: #{inspect reason}, task: #{inspect t}" end
+        Logger.info fn -> "Task stop, clean over! Reason: #{inspect reason}, Task: #{inspect t}" end
       end
 
       def pk(param) do
@@ -148,11 +155,16 @@ defmodule Vayne.Task do
       def handle_info({:EXIT, _from, :timeout}, t), do: {:noreply, t}
 
       #task exit error
-      def handle_info({:EXIT, _from, error}, t) do
+      def handle_info({:EXIT, from, error}, t = %Vayne.Task{task: pid}) when from == pid do
         new_stat = fill_result(t, :error, error)
         {:noreply, new_stat}
       end
       
+      #exit from trigger, TODO: condition should be more specific
+      def handle_info({:EXIT, from, error}, t) do
+        {:stop, "Task exit, info from #{inspect from}, reason: #{inspect error}", t}
+      end
+
       #task result get
       def handle_info({:finish, result}, t) do
         new_stat = fill_result(t, :ok, result)

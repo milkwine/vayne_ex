@@ -18,5 +18,5 @@ before_script:
 script:
   - elixir --sname foo -e 'IO.puts Node.ping(:"vayne-1@localhost")'|grep pong
   - elixir --sname foo -e 'IO.puts Node.ping(:"vayne-3@localhost")'|grep pong
-  - MIX_ENV=test mix credo  --all --format=oneline
+  - MIX_ENV=test mix credo  --all --format=oneline --ignore-checks="TODO"
   - MIX_ENV=test elixir --sname vayne-2@localhost -S mix test

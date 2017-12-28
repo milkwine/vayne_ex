@@ -5,11 +5,11 @@ defmodule Vayne.Trigger.Repeat do
 
   use Vayne.Trigger
 
-  @interval 3_000
+  @interval 1_000
   defp tick do
     conf = get_self_conf()
     interval = Keyword.get(conf, :interval, @interval)
-    Process.send_after(:self, :check_task, interval)
+    Process.send_after(self(), :check_task, interval)
   end
 
   def do_init(_param) do
@@ -39,19 +39,29 @@ defmodule Vayne.Trigger.Repeat do
   end
 
   def do_clean(pid, state) do
-    state
+    {:ok, Map.delete(state, pid)}
   end
 
   def handle_info(:check_task, state) do
 
     now = System.system_time(:second)
 
-    #state 
-    #|> Enum.filter(fn {_pid, %{next: next}} -> now >= next end)
-    #|> Enum.map()
+    state = state 
+    |> Enum.filter(fn {_pid, %{next: next}} -> now >= next end)
+    |> Enum.reduce(state, fn({pid, trigger_stat}, acc) -> run_task(pid, trigger_stat, acc) end)
 
     tick()
     {:noreply, state}
+  end
+
+  defp run_task(pid, %{next: next, interval: interval}, acc) do
+   case Vayne.Task.run(pid) do
+      :ok ->
+        Map.put(acc, pid, %{next: next + interval, interval: interval})
+      {:error, reason} ->
+        Logger.warn fn -> "Trigger task failed, task: #{inspect pid}, reason: #{inspect reason}" end
+        acc
+    end
   end
 
   @default_interval      60_000
@@ -64,8 +74,9 @@ defmodule Vayne.Trigger.Repeat do
     random        = Keyword.get(params, :random, @default_random)
     random_factor = Keyword.get(params, :random_factor, @default_random_factor)
 
-    next = if random do
-      now + :rand.uniform(round(interval * random_factor))
+    r = round(interval * random_factor)
+    next = if random && r > 0 do
+      now + :rand.uniform(r)
     else
       now
     end

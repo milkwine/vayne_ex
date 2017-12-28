@@ -44,6 +44,7 @@ defmodule Vayne.Trigger do
       def handle_call({:register, param}, {pid, _ref}, state) do
         case do_register(pid, param, state) do
           {:ok, state} ->
+            #task should die if trigger was killed
             Process.link(pid)
             {:reply, :ok, state}
           error ->
@@ -52,16 +53,16 @@ defmodule Vayne.Trigger do
         end
       end
 
-      #handle down, do_clean
-      def handle_info(msg = {:DOWN, _ref, _type, pid, info}, state) do
-        Logger.info fn -> "Clean Trigger, Pid: #{inspect pid}" end
-        state = do_clean(pid, state)
-        {:noreply, state}
-      end
+      #def handle_info({:DOWN, ref, _type, pid, info}, state) do
+      #  Logger.info fn -> "Clean Trigger, Pid: #{inspect pid}" end
+      #  {:ok, state} = do_clean(pid, state)
+      #  {:noreply, state}
+      #end
 
+      #handle down, do_clean
       def handle_info({:EXIT, pid, _}, state) do
-        Logger.info fn -> "Clean Trigger, Pid: #{inspect pid}" end
-        state = do_clean(pid, state)
+        Logger.error fn -> "Clean Trigger, Pid: #{inspect pid}" end
+        {:ok, state} = do_clean(pid, state)
         {:noreply, state}
       end
 
