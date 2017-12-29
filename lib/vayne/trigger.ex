@@ -61,7 +61,7 @@ defmodule Vayne.Trigger do
 
       #handle down, do_clean
       def handle_info({:EXIT, pid, _}, state) do
-        Logger.error fn -> "Clean Trigger, Pid: #{inspect pid}" end
+        Logger.info fn -> "Clean Trigger, Pid: #{inspect pid}" end
         {:ok, state} = do_clean(pid, state)
         {:noreply, state}
       end

@@ -4,12 +4,16 @@ defmodule Vayne.Trigger.RepeatTest do
   alias Vayne.Center.GuardHelper
 
   setup do
-    GuardHelper.switch_normal()
+    if Vayne.Center.GuardHelper.can_test_distributed do
+      GuardHelper.switch_failover()
+    else
+      GuardHelper.switch_normal()
+    end
   end
 
   test "test normal trigger" do
     assert {:ok, pid} = Vayne.Task.Test.start(:normal, [repeat: [interval: 2]], 10)
-    Process.sleep(3_000)
+    Process.sleep(4_000)
     status = Vayne.Task.stat(pid)
     assert status.last.type == :ok
     Vayne.Task.stop(pid)

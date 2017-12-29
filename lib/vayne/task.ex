@@ -118,6 +118,7 @@ defmodule Vayne.Task do
         {:ok, task}
       end
 
+      @check_center 5_000
       def init([param, triggers, timeout]) do
         {:ok, pk} = pk(param)
         {:ok, stat} = do_init(param)
@@ -127,6 +128,7 @@ defmodule Vayne.Task do
              :ok <- Vayne.Center.Service.register(task)
         do
           Process.flag(:trap_exit, true)
+          Process.send_after(self(), :check_center, @check_center)
           {:ok, task}
         else
           {:error, error} ->
@@ -179,6 +181,16 @@ defmodule Vayne.Task do
       end
 
       def handle_info(:timeout, t = %Vayne.Task{}), do: {:noreply, t}
+
+      def handle_info(:check_center, t = %Vayne.Task{}) do
+        should_alive = Vayne.Center.Service.task_should_alive?(t)
+        if should_alive do
+          Process.send_after(self(), :check_center, @check_center)
+          {:noreply, t}
+        else
+          {:stop, "Check Center failed, shoud stop", t}
+        end
+      end
 
       def handle_call(:run, {_pid, _ref}, t = %Vayne.Task{}) do
         if t.task != nil do

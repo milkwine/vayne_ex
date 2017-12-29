@@ -4,7 +4,11 @@ defmodule VayneTaskTestTest do
   alias Vayne.Center.GuardHelper
 
   setup do
-    GuardHelper.switch_normal()
+    if Vayne.Center.GuardHelper.can_test_distributed do
+      GuardHelper.switch_failover()
+    else
+      GuardHelper.switch_normal()
+    end
   end
 
   test "normal" do
@@ -13,6 +17,7 @@ defmodule VayneTaskTestTest do
     Process.sleep(2_000)
     status = Vayne.Task.stat(pid)
     assert status.last.type == :ok
+    Vayne.Task.stop(pid)
   end
 
   test "timeout" do
@@ -21,6 +26,7 @@ defmodule VayneTaskTestTest do
     Process.sleep(5_000)
     status = Vayne.Task.stat(pid)
     assert status.last.type == :timeout
+    Vayne.Task.stop(pid)
   end
 
   test "error" do
@@ -29,6 +35,7 @@ defmodule VayneTaskTestTest do
     Process.sleep(2_000)
     status = Vayne.Task.stat(pid)
     assert status.last.type == :error
+    Vayne.Task.stop(pid)
   end
 
   test "task killed and start again" do
@@ -37,6 +44,19 @@ defmodule VayneTaskTestTest do
 
     assert {:ok, _} = Vayne.Task.Test.start(:test_kill, [])
 
+  end
+
+  test "task should stop when center not exist the task" do
+
+    {:ok, pid} = Vayne.Task.Test.start(:test_check_center, [])
+
+    center = GenServer.whereis({:global, Vayne.Center.Service})
+
+    send(center, {:DOWN, make_ref(), :process, pid, :fake_down})
+
+    Process.sleep(6_000)
+
+    assert false == Process.alive?(pid)
   end
 
   test "task killed and no more job process left" do
