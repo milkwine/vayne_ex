@@ -42,7 +42,8 @@ defmodule VayneTaskTestTest do
     {:ok, pid} = Vayne.Task.Test.start(:test_kill, [])
     Vayne.Task.stop(pid)
 
-    assert {:ok, _} = Vayne.Task.Test.start(:test_kill, [])
+    assert {:ok, pid} = Vayne.Task.Test.start(:test_kill, [])
+    Vayne.Task.stop(pid)
 
   end
 
