@@ -47,12 +47,13 @@ defmodule VayneTaskTestTest do
 
   end
 
-  test "task should stop when center not exist the task" do
+  test "task should stop when center not recored the task" do
 
     {:ok, pid} = Vayne.Task.Test.start(:test_check_center, [])
 
     center = GenServer.whereis({:global, Vayne.Center.Service})
 
+    #make center clean the task
     send(center, {:DOWN, make_ref(), :process, pid, :fake_down})
 
     Process.sleep(6_000)

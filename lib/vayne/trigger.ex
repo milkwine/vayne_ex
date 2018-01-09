@@ -59,7 +59,7 @@ defmodule Vayne.Trigger do
       #  {:noreply, state}
       #end
 
-      #handle down, do_clean
+      #handle task down, do_clean
       def handle_info({:EXIT, pid, _}, state) do
         Logger.info fn -> "Clean Trigger, Pid: #{inspect pid}" end
         {:ok, state} = do_clean(pid, state)
@@ -76,7 +76,6 @@ defmodule Vayne.Trigger do
   """
   @spec register(triggers :: list({atom(), term})) :: :ok  | {:error, term}
   def register(triggers) do
-    pid = self()
     triggers 
     |> Enum.map(fn {module, param} -> to_module(module).register(param) end)
     |> Enum.find(:ok, &match?({:error, _}, &1))

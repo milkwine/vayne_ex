@@ -70,6 +70,7 @@ defmodule Vayne.Task do
   @callback do_clean(stat) :: :ok | {:error, String.t}
 
 
+  @spec run(pid) :: :ok | {:error, term}
   def run(pid) do
     try do
       GenServer.call(pid, :run)
@@ -77,6 +78,8 @@ defmodule Vayne.Task do
       :exit, value -> {:error, value}
     end
   end
+
+  @spec stop(pid) :: :ok
   def stop(pid),  do: GenServer.stop(pid, :shutdown)
 
   @spec stat(pid) :: map
@@ -89,11 +92,6 @@ defmodule Vayne.Task do
     Map.put(ret, :last, List.first(status.results))
   end
 
-  def apply_run(parent, m, f, a) do
-    result = apply(m, f, a)
-    send(parent, {:finish, result})
-  end
-
   defmacro __using__(_opts) do
     quote do
       use GenServer
@@ -102,20 +100,6 @@ defmodule Vayne.Task do
 
       def start(param, triggers, timeout \\ 60_000) do
         GenServer.start(__MODULE__, [param, triggers, timeout])
-      end
-
-      @doc """
-      Should never use this function; Only for unite test.
-      """
-      def start_no_register(param, triggers) do
-        GenServer.start(__MODULE__, {:no_register, [param, triggers]})
-      end
-
-      def init({:no_register, [param, triggers, timeout]}) do
-        {:ok, pk} = pk(param)
-        {:ok, stat} = do_init(param)
-        task = %Vayne.Task{pk: pk, stat: stat}
-        {:ok, task}
       end
 
       @check_center 5_000
@@ -196,7 +180,13 @@ defmodule Vayne.Task do
         if t.task != nil do
           {:reply, {:error, :still_running}, t}
         else
-          task = spawn_link(Vayne.Task, :apply_run, [self(), __MODULE__, :do_run, [t.stat]])
+          parent = self()
+
+          task = spawn_link(fn ->
+            result = apply(__MODULE__, :do_run, [t.stat])
+            send(parent, {:finish, result})
+          end)
+
           t = t
           |> Map.put(:task, task)
           |> Map.put(:start_time, :os.system_time(:second))
